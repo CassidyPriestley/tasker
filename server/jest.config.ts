@@ -7,6 +7,7 @@ const config: Config = {
   verbose: true,
   forceExit: true,
   clearMocks: true,
+  setupFiles: ["<rootDir>/jest.setup.ts"],
 };
 
 export default config;
