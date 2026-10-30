@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# secrets - never commit these
+.env
+.env.*
+!.env.example
+
+# build output
+dist/
+.expo/
+
+# editor and macOS
+.vscode/
+.DS_Store
+EOF
