@@ -7,6 +7,6 @@
 # NOTE: (Keeps the sameSite: "strict" login cookie working)
 [[redirects]]
   from = "/api/*"
-  to = "https://YOUR-API-NAME.onrender.com/:splat"
+  to = "https://tasker-mgjx.onrender.com"
   status = 200
   force = true
