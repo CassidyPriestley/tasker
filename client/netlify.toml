@@ -1,0 +1,12 @@
+# Build the static web version of the Expo app
+[build]
+  command = "npx expo export -p web"
+  publish = "dist"
+
+# Forward API calls to Render, so the browser only ever talks to one site
+# NOTE: (Keeps the sameSite: "strict" login cookie working)
+[[redirects]]
+  from = "/api/*"
+  to = "https://YOUR-API-NAME.onrender.com/:splat"
+  status = 200
+  force = true

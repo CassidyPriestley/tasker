@@ -14,11 +14,18 @@ import helmet from "helmet";
 import { authLimiter, generalLimiter } from "./middleware/rateLimiter";
 
 const app = express();
+// Render (and Netlify's proxy in front of it) forward requests to us.
+// Trusting those 2 hops lets req.ip be the visitor's real IP, which the rate limiter needs.
+app.set("trust proxy", 2);
+
+const allowedOrigins = process.env.CORS_ORIGINS?.split(",").map((o) =>
+  o.trim(),
+) ?? ["http://localhost:4000", "http://localhost:8081"];
 
 app.use(helmet());
 app.use(
   cors({
-    origin: ["http://localhost:4000", "http://localhost:8081"],
+    origin: allowedOrigins,
     credentials: true,
   }),
 );

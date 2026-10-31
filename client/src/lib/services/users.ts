@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { api } from "../api";
 import type { User } from "@/types";
 
@@ -39,23 +40,27 @@ export function deleteAccount(password: string) {
 }
 
 export type AvatarFile = {
-  uri: string; //       where the picked photo lives on the phone
+  uri: string; // where the picked photo lives on the phone
   mimeType?: string; // e.g. "image/jpeg"
   fileName?: string | null;
 };
 
-// The server uses multer, which reads a *file* from a multipart form,
-// not JSON. So we send FormData with the photo in a field named "avatar".
-export function uploadAvatar(file: AvatarFile) {
+export async function uploadAvatar(file: AvatarFile) {
   const form = new FormData();
-  // React Native's FormData accepts { uri, name, type } as a file;
-  // the cast is because TypeScript only knows the browser's Blob type
-  form.append("avatar", {
-    uri: file.uri,
-    name: file.fileName ?? "avatar.jpg",
-    type: file.mimeType ?? "image/jpeg",
-  } as unknown as Blob);
+  const name = file.fileName ?? "avatar.jpg";
 
+  if (Platform.OS === "web") {
+    // WEB: the picked image is a blob/:data: URL, so fetch it to get the real file
+    const blob = await (await fetch(file.uri)).blob();
+    form.append("avatar", blob, name);
+  } else {
+    // React Native form data accepts (uri, name, type) as a file
+    form.append("avatar", {
+      uri: file.uri,
+      name,
+      type: file.mimeType ?? "image/jpeg",
+    } as unknown as Blob);
+  }
   return api<{ message: string; avatarUrl: string }>("/users/me/avatar", {
     method: "POST",
     body: form,

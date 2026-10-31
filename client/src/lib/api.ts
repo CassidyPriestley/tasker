@@ -7,7 +7,10 @@ const LAN_IP = "192.168.88.2"; // CHANGE WHEN YOU TEST ON YOUR PHONE
 // export const BASE_URL =
 //   Platform.OS === "web" ? "http://localhost:4000" : `http://${LAN_IP}:4000`;
 export const BASE_URL =
-  Platform.OS === "android" ? "http://10.0.2.2:4000" : "http://localhost:4000";
+  process.env.EXPO_PUBLIC_API_URL ??
+  (Platform.OS === "android"
+    ? "http://10.0.2.2:4000"
+    : "http://localhost:4000");
 
 export class ApiError extends Error {
   status: number;

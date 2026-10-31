@@ -1,6 +1,6 @@
 // A bottom sheet with the habit form. Like TaskSheet, it does both jobs:
-//   - habit prop is null   → "New habit" (empty form)
-//   - habit prop is a Habit → "Edit habit" (filled in, plus archive / delete)
+// Habit prop is NULL: "New habit" (empty form)
+// Habit prop is a Habit: "Edit habit" (filled in, plus archive / delete)
 
 import { FilterChips } from "@/components/tasks/FilterChips";
 import { GlowPillButton } from "@/components/ui/GlowPillButton";
@@ -14,7 +14,6 @@ import type { CreateHabitInput, DayName, Habit, HabitFrequency } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -34,6 +33,7 @@ import {
   habitIcon,
   type IconName,
 } from "./habitOptions";
+import { confirmDestructive } from "@/lib/dialogs";
 
 const FREQUENCIES: { value: HabitFrequency; label: string }[] = [
   { value: "daily", label: "Every day" },
@@ -73,7 +73,7 @@ export function HabitSheet({
   onMakeTask,
 }: Props) {
   // The screen gives this a new `key` each time it opens, so these starting
-  // values are re-read for every habit (same trick as TaskSheet)
+  // Values are re-read for every habit (same trick as TaskSheet)
   const [title, setTitle] = useState(habit?.title ?? "");
   const [description, setDescription] = useState(habit?.description ?? "");
   const [frequency, setFrequency] = useState<HabitFrequency>(
@@ -110,7 +110,7 @@ export function HabitSheet({
     );
   }
 
-  // runs an async action with the spinner on and shows any error
+  // Runs an async action with the spinner on and shows any error
   async function run(action: () => Promise<void>, closeAfter = true) {
     setBusy(true);
     setError(null);
@@ -139,7 +139,7 @@ export function HabitSheet({
         title: title.trim(),
         description: description.trim() || null,
         frequency,
-        // keep the days in Sunday → Saturday order; daily habits have none
+        // keep the days in order: Sunday-Saturday
         days:
           frequency === "range"
             ? DAY_NAMES.filter((d) => days.includes(d))
@@ -154,20 +154,14 @@ export function HabitSheet({
 
   // Deleting can't be undone, so ask first (the native iOS pattern)
   function confirmDelete(target: Habit) {
-    Alert.alert(
+    confirmDestructive(
       "Delete habit?",
       `"${target.title}" and its streak history will be gone for good.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            onDelete(target);
-            onClose();
-          },
-        },
-      ],
+      "Delete",
+      () => {
+        onDelete(target);
+        onClose();
+      },
     );
   }
 
@@ -182,7 +176,7 @@ export function HabitSheet({
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* dimmed background: tapping it closes the sheet */}
+        {/* Dimmed background: tapping it closes the sheet */}
         <Pressable
           style={[StyleSheet.absoluteFill, styles.backdrop]}
           onPress={onClose}
@@ -210,7 +204,7 @@ export function HabitSheet({
             </Text>
 
             {isArchived ? (
-              // the backend won't edit archived habits, so only offer restore
+              // The backend won't edit archived habits, so only offer restore
               <Text style={[styles.hint, { color: colors.mutedText }]}>
                 This habit is archived. Restore it to edit it or check it off
                 again.
@@ -350,7 +344,7 @@ export function HabitSheet({
                   />
                 </View>
 
-                {/* only for saved habits that have "make it a task" turned on */}
+                {/* Only for saved habits that have "make it a task" turned on */}
                 {isEditing && !!habit.generates_task ? (
                   <Pressable
                     onPress={() =>
@@ -369,7 +363,9 @@ export function HabitSheet({
                       size={18}
                       color={glowColors.green}
                     />
-                    <Text style={[styles.linkText, { color: glowColors.green }]}>
+                    <Text
+                      style={[styles.linkText, { color: glowColors.green }]}
+                    >
                       Add to today&apos;s tasks
                     </Text>
                   </Pressable>
@@ -391,7 +387,7 @@ export function HabitSheet({
               </Text>
             ) : null}
 
-            {/* the one loud button; everything else is quieter text */}
+            {/* The one loud button; everything else is quieter text */}
             {isArchived ? (
               <GlowPillButton
                 label="Restore habit"

@@ -22,8 +22,8 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
     }
     req.user = decoded;
     next();
-  } catch (err) {
-    if (err instanceof TokenExpiredError) {
+  } catch (error) {
+    if (error instanceof TokenExpiredError) {
       return next(new AppError("Token expired", 401));
     }
     return next(new AppError("Invalid token", 401));

@@ -4,6 +4,7 @@
 import { fonts } from "@/constants/fonts";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import { showMessage } from "@/lib/dialogs";
 import { getErrorMessage } from "@/lib/errors";
 import { deleteAvatar, uploadAvatar } from "@/lib/services/users";
 import { Image } from "expo-image";
@@ -12,6 +13,7 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -25,14 +27,14 @@ export function AvatarButton() {
   const { colors } = useTheme();
   const [busy, setBusy] = useState(false);
 
-  // runs an upload/remove with the spinner on, then reloads the user
+  // Runs an upload/remove with the spinner on, then reloads the user
   async function run(action: () => Promise<unknown>) {
     setBusy(true);
     try {
       await action();
       await refreshUser();
-    } catch (err) {
-      Alert.alert("Couldn't update your photo", getErrorMessage(err));
+    } catch (error) {
+      showMessage("Couldn't update your photo", getErrorMessage(error));
     } finally {
       setBusy(false);
     }
@@ -43,8 +45,8 @@ export function AvatarButton() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsEditing: true, // lets them crop…
-      aspect: [1, 1], //      …to a square, since the avatar is a circle
-      quality: 0.7, //        smaller file = faster upload; still looks sharp
+      aspect: [1, 1], // to a square, since the avatar is a circle
+      quality: 0.7, // smaller file = faster upload; still looks sharp
     });
     if (result.canceled) return;
 
@@ -60,6 +62,10 @@ export function AvatarButton() {
 
   function openMenu() {
     if (busy) return;
+    if (Platform.OS === "web") {
+      choosePhoto();
+      return;
+    }
     Alert.alert("Profile photo", undefined, [
       { text: "Choose photo", onPress: choosePhoto },
       ...(user?.avatar_url
